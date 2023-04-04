@@ -58,8 +58,6 @@ public class TrainService {
 
         Train train = trainRepository.findById(seatAvailabilityEntryDto.getTrainId()).get();
 
-        int availableSeats = 0;
-
         int totalTrainSeats = train.getNoOfSeats();//get no of seats in train
 
         int bookedSeats = 0;
@@ -67,30 +65,31 @@ public class TrainService {
         List<Ticket> ticketList = train.getBookedTickets();
 
         for(Ticket t : ticketList){
-            bookedSeats+=t.getPassengersList().size();
+            bookedSeats+=t.getPassengersList().size();//intial seats that are book
         }
 
-        HashMap<String,Integer> map = new HashMap<>();
+        int availableSeats = train.getNoOfSeats()- bookedSeats;
+
+        //to identify extra seats that can be used
         String []routes = train.getRoute().split(",");
+        int a =-1,b=-1;
         for(int i=0;i<routes.length;i++){
-            map.put(routes[i],i);
+            if(seatAvailabilityEntryDto.getFromStation().toString().equalsIgnoreCase(routes[i]))a=i;//index of our target boarding station
+            else if(seatAvailabilityEntryDto.getToStation().toString().equalsIgnoreCase(routes[i]))b=i;//index of our target destination station
         }
+        if(a==-1 || b==-1|| (b-a)<=0)return 0;
 
-        if(!map.containsKey(seatAvailabilityEntryDto.getFromStation().toString()) || !map.containsKey(seatAvailabilityEntryDto.getToStation().toString())){
-            return 0;
-        }
-
-        availableSeats = train.getNoOfSeats()-bookedSeats;//initial no of empty seats
-
-        for(Ticket t : ticketList){
-            String fromStation = t.getFromStation().toString();
-            String toStation = t.getToStation().toString();
-            if(map.get(seatAvailabilityEntryDto.getToStation().toString()) <= map.get(fromStation)){
-                availableSeats++;
+        for(Ticket t : ticketList) {
+            int c = -1;
+            int d = -1;
+            for (int i = 0; i < routes.length; i++) {
+                if (t.getFromStation().toString().equalsIgnoreCase(routes[i]))c=i;//index of boarding station of ticket
+                else if(t.getToStation().toString().equalsIgnoreCase(routes[i]))d=i;//index of destination station of ticket
             }
-            if(map.get(seatAvailabilityEntryDto.getFromStation().toString()) >= map.get(toStation)){
-                availableSeats++;
-            }
+
+            if(c>b)availableSeats+=t.getPassengersList().size();
+
+            else if(d<a)availableSeats+=t.getPassengersList().size();
         }
 
         return availableSeats;
