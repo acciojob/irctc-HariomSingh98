@@ -100,6 +100,7 @@ public class TicketService {
 
 
         train.getBookedTickets().add(newTicket);
+        train.setNoOfSeats(train.getNoOfSeats()-bookTicketEntryDto.getNoOfSeats());
 
         Passenger bookedPerson = passengerRepository.findById(bookTicketEntryDto.getBookingPersonId()).get();
 
@@ -107,10 +108,9 @@ public class TicketService {
 
         Train savedTrain = trainRepository.save(train);
 
-        int ticketId = savedTrain.getBookedTickets().get(savedTrain.getBookedTickets().size()-1).getTicketId();
 
 
-        return ticketId;
+        return savedTrain.getTrainId();
 
     }
 }
