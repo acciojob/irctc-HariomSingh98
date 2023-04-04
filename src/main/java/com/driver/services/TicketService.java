@@ -78,6 +78,15 @@ public class TicketService {
             throw new Exception("Invalid stations");
         }
 
+
+        //get the list of passenger
+        List<Passenger> passengers = new ArrayList<>();
+        List<Integer> list =bookTicketEntryDto.getPassengerIds();
+        for(int i : list){
+            Passenger passenger = passengerRepository.findById(i).get();
+            passengers.add(passenger);
+        }
+
         //create new ticket object to book ticket and set the attribute
         Ticket newTicket = new Ticket();
         int totalFare =0;
@@ -89,13 +98,6 @@ public class TicketService {
         newTicket.setTotalFare(totalFare);
         newTicket.setTrain(train);
 
-        //get the list of passenger
-        List<Passenger> passengers = new ArrayList<>();
-        List<Integer> list =bookTicketEntryDto.getPassengerIds();
-        for(int i : list){
-            Passenger passenger = passengerRepository.findById(i).get();
-            passengers.add(passenger);
-        }
         newTicket.setPassengersList(passengers);
 
 
@@ -108,9 +110,7 @@ public class TicketService {
 
         Train savedTrain = trainRepository.save(train);
 
-
-
-        return savedTrain.getTrainId();
+        return newTicket.getTicketId();
 
     }
 }

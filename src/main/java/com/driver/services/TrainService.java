@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -56,18 +57,6 @@ public class TrainService {
         //We need to find out the available seats between the given 2 stations.
 
         Train train = trainRepository.findById(seatAvailabilityEntryDto.getTrainId()).get();
-        Station fromStation = seatAvailabilityEntryDto.getFromStation();
-        Station toStation = seatAvailabilityEntryDto.getToStation();
-
-        String []routes = train.getRoute().split(",");
-        int x =-1;//index of  fromStation in train route
-
-        int y=-1;//index of toStation in train route
-        for(int i=0;i< routes.length;i++){
-           if(routes[i].equalsIgnoreCase(fromStation.toString()))x=i;
-
-           if(routes[i].equalsIgnoreCase(toStation.toString()))y=i;
-        }
 
         int availableSeats = 0;
 
@@ -78,24 +67,31 @@ public class TrainService {
         List<Ticket> ticketList = train.getBookedTickets();
 
         for(Ticket t : ticketList){
-            List<Passenger> passengers = t.getPassengersList();
-            Station starting = t.getFromStation();
-            Station ending = t.getToStation();
-            int z = -1;
-            int w =-1;
-            for(int i=0;i< routes.length;i++){
-                if(routes[i].equalsIgnoreCase(starting.toString()))z=i;
-
-                if(routes[i].equalsIgnoreCase(ending.toString()))w=i;
-            }
-
-            //check the overlapping condition marked as booked seats
-            if((z<x && w>x) )bookedSeats+=passengers.size();
-
-
+            bookedSeats+=t.getPassengersList().size();
         }
 
-        availableSeats = totalTrainSeats - bookedSeats;
+        HashMap<String,Integer> map = new HashMap<>();
+        String []routes = train.getRoute().split(",");
+        for(int i=0;i<routes.length;i++){
+            map.put(routes[i],i);
+        }
+
+        if(!map.containsKey(seatAvailabilityEntryDto.getFromStation().toString()) || !map.containsKey(seatAvailabilityEntryDto.getToStation().toString())){
+            return 0;
+        }
+
+        availableSeats = train.getNoOfSeats()-bookedSeats;//initial no of empty seats
+
+        for(Ticket t : ticketList){
+            String fromStation = t.getFromStation().toString();
+            String toStation = t.getToStation().toString();
+            if(map.get(seatAvailabilityEntryDto.getToStation().toString()) <= map.get(fromStation)){
+                availableSeats++;
+            }
+            if(map.get(seatAvailabilityEntryDto.getFromStation().toString()) >= map.get(toStation)){
+                availableSeats++;
+            }
+        }
 
         return availableSeats;
     }
