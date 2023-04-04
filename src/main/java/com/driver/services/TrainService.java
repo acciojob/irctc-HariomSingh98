@@ -90,7 +90,7 @@ public class TrainService {
             }
 
             //check the overlapping condition marked as booked seats
-            if((z<x && w>x) || (z==x && w<y))bookedSeats+=passengers.size();
+            if((z<x && w>x) )bookedSeats+=passengers.size();
 
 
         }
@@ -163,15 +163,24 @@ public class TrainService {
 
         List<Train> trains = trainRepository.findAll();//get the list of trains
 
+        int startingTime = startTime.getHour()*60+startTime.getMinute();//in minutes according to a day
+        int endingTime = endTime.getHour()*60 + endTime.getMinute();//in min acc to a day
+
         List<Integer> trainIds = new ArrayList<>();
 
-        for(Train t : trains){
 
-            if(t.getRoute().contains(station.toString())){
-                LocalTime time = t.getDepartureTime();
-                if(time.compareTo(startTime)>=0 && time.compareTo(endTime)<=0){
-                     trainIds.add(t.getTrainId());
-                }
+        for(Train t : trains){
+            String []routes = t.getRoute().split(",");
+            int indexOfStation  = -1;
+            for(int i=0;i<routes.length;i++){
+                if(routes[i].equalsIgnoreCase(station.toString()))indexOfStation=i;
+            }
+
+            int  comingToStationTime = indexOfStation==0?(t.getDepartureTime().getHour()*60+t.getDepartureTime().getMinute())
+                    : ((t.getDepartureTime().getHour()+indexOfStation)*60+t.getDepartureTime().getMinute());
+
+            if(comingToStationTime>=startingTime && comingToStationTime<=endingTime){
+                trainIds.add(t.getTrainId());
             }
         }
 
