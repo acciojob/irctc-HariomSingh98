@@ -110,7 +110,7 @@ public class TicketService {
 
         Train savedTrain = trainRepository.save(train);
 
-        return savedTrain.getBookedTickets().get(savedTrain.getBookedTickets().size()-1).getTicketId();
+        return ticketRepository.save(newTicket).getTicketId();
 
     }
 }

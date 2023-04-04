@@ -87,9 +87,9 @@ public class TrainService {
                 else if(t.getToStation().toString().equalsIgnoreCase(routes[i]))d=i;//index of destination station of ticket
             }
 
-            if(c>b)availableSeats+=t.getPassengersList().size();
+            if(c>=b)availableSeats+=t.getPassengersList().size();
 
-            else if(d<a)availableSeats+=t.getPassengersList().size();
+            else if(d<=a)availableSeats+=t.getPassengersList().size();
         }
 
         return availableSeats;
